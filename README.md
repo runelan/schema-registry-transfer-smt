@@ -4,12 +4,6 @@ A [Kafka Connect Single Message Transformation (SMT)][smt] that reads the serial
 of Confluent's `KafkaAvroSerializer`, performs a lookup against a source [Confluent Schema Registry][schema-registry]
 for the ID in the message, and registers that schema into a destination Registry for that topic/subject under a new ID.
 
-## Classification
-
-```text
-> K1 Internal Code
-```
-
 ## Overview
 
 To be used where it is not feasible to make the destination Schema Registry as a follower to the source Registry, or
