@@ -4,7 +4,7 @@
 
     <groupId>cricket.jmoore</groupId>
     <artifactId>schema-registry-transfer-smt</artifactId>
-    <version>0.2.1-SNAPSHOT</version>
+    <version>0.2.3-SNAPSHOT</version>
     <name>schema-registry-transfer-smt</name>
     <description>
         A Kafka Connect Transform for copying Confluent Schema Registry schemas between different registries.
@@ -29,6 +29,11 @@
         </developer>
     </developers>
 
+    <scm>
+        <developerConnection>scm:git:git@gitlab.statnett.no:kafka/sandbox/schema-registry-transfer-smt.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <repositories>
         <repository>
             <id>confluent</id>
@@ -38,23 +43,15 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.surefire.version>3.5.3</maven.surefire.version>
-        <maven.release.version>3.1.1</maven.release.version>
-        <maven.shade.version>3.6.0</maven.shade.version>
+        <maven.shade.version>3.6.1</maven.shade.version>
+        <java.version>17</java.version>
         <slf4j.version>2.0.17</slf4j.version>
-        <kafka.version>3.9.0</kafka.version>
-        <confluent.version>5.1.0</confluent.version>
-        <jackson.version>2.19.0</jackson.version>
-        <paranamer.version>2.7</paranamer.version>
-        <xz.version>1.10</xz.version>
-        <snappy.version>1.1.10.7</snappy.version>
-        <commons-compress.version>1.27.1</commons-compress.version>
-        <avro.version>1.12.0</avro.version>
-        <junit-juniper.version>5.12.2</junit-juniper.version>
-        <logback.version>1.5.18</logback.version>
-        <wiremock.version>3.13.0</wiremock.version>
+        <kafka.version>8.1.0-ce</kafka.version>
+        <confluent.version>8.1.0</confluent.version>
+        <avro.version>1.12.1</avro.version>
+        <junit-juniper.version>6.0.1</junit-juniper.version>
+        <logback.version>1.5.20</logback.version>
+        <wiremock.version>3.13.1</wiremock.version>
         <shade.prefix>cricket.jmoore</shade.prefix>
     </properties>
 
@@ -79,41 +76,6 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-transforms</artifactId>
             <version>${kafka.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thoughtworks.paranamer</groupId>
-            <artifactId>paranamer</artifactId>
-            <version>${paranamer.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.tukaani</groupId>
-            <artifactId>xz</artifactId>
-            <version>${xz.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.xerial.snappy</groupId>
-            <artifactId>snappy-java</artifactId>
-            <version>${snappy.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-compress</artifactId>
-            <version>${commons-compress.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -177,20 +139,7 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven.surefire.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>${maven.release.version}</version>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -234,6 +183,14 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>

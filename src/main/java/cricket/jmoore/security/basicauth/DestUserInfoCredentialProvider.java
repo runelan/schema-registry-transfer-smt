@@ -7,6 +7,6 @@ public class DestUserInfoCredentialProvider extends UserInfoCredentialProvider
 {
     @Override
     public String alias() {
-        return "DEST_USER_INFO";
+        return "TARGET_USER_INFO";
     }
 }
