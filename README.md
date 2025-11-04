@@ -58,7 +58,7 @@ value.converter=org.apache.kafka.connect.converters.ByteArrayConverter
 transforms=AvroSchemaTransfer
 
 transforms.AvroSchemaTransfer.type=cricket.jmoore.kafka.connect.transforms.SchemaRegistryTransfer
-transforms.AvroSchemaTransfer.src.schema.registry.url=http://schema-registry-1:8081
+transforms.AvroSchemaTransfer.source.schema.registry.url=http://schema-registry-1:8081
 transforms.AvroSchemaTransfer.target.schema.registry.url=http://schema-registry-2:8081
 ```
 
@@ -76,7 +76,7 @@ Distributed Kafka Connect configuration section
     "transforms": "AvroSchemaTransfer",
 
     "transforms.AvroSchemaTransfer.type": "cricket.jmoore.kafka.connect.transforms.SchemaRegistryTransfer",
-    "transforms.AvroSchemaTransfer.src.schema.registry.url": "http://schema-registry-1:8081",
+    "transforms.AvroSchemaTransfer.source.schema.registry.url": "http://schema-registry-1:8081",
     "transforms.AvroSchemaTransfer.target.schema.registry.url": "http://schema-registry-2:8081"
 }
 ```
@@ -91,18 +91,18 @@ Distributed Kafka Connect configuration section
 
 ## Embedded Schema Registry Client Configuration
 
-Schema Registry Transfer SMT passes some properties prefixed by either `src.` or `target.`
-through to its embedded schema registry clients, after stripping away `src.` or `target.`
+Schema Registry Transfer SMT passes some properties prefixed by either `source.` or `target.`
+through to its embedded schema registry clients, after stripping away `source.` or `target.`
 prefix used to disambiguate which client is to receive which configuration value.
 
-Properties prefixed by `src.` are passed through to the source consumer's schema registry
+Properties prefixed by `source.` are passed through to the source consumer's schema registry
 client.  Properties prefixed by `target.` are passed through to the target producer's schema
 registry client.
 
 | Configuration Parameter                         | Default | Description                                                                                                       |
 |-------------------------------------------------|---------|-------------------------------------------------------------------------------------------------------------------|
-| **(src\|target).basic.auth.credentials.source** | URL     | Specify how to pick credentials for Basic Auth header. Supported values are `URL`, `USER_INFO` and `SASL_INHERIT` |
-| **(src\|target).basic.auth.user.info**          |         | Specify credentials for Basic Auth in form of `{username}:{password}` when source is `USER_INFO`                  |
+| **(source\|target).basic.auth.credentials.source** | URL     | Specify how to pick credentials for Basic Auth header. Supported values are `URL`, `USER_INFO` and `SASL_INHERIT` |
+| **(source\|target).basic.auth.user.info**          |         | Specify credentials for Basic Auth in form of `{username}:{password}` when source is `USER_INFO`                  |
 
 ## Subject Renaming
 

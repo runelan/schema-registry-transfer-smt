@@ -123,7 +123,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
         this.transferKeys = config.getBoolean(ConfigName.TRANSFER_KEYS);
         this.includeHeaders = config.getBoolean(ConfigName.INCLUDE_HEADERS);
 
-        // TODO: Make the Strategy configurable, may be different for src and target
+        // TODO: Make the Strategy configurable, may be different for source and target
         // Strategy for the -key and -value subjects
         this.subjectNameStrategy = new TopicNameStrategy();
     }
