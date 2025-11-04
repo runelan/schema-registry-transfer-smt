@@ -4,6 +4,7 @@ package cricket.jmoore.kafka.connect.transforms;
 import org.apache.kafka.connect.data.Schema;
 
 public class ConnectSchemaUtil {
+
     public static boolean isBytesSchema(Schema connectSchema) {
         if (connectSchema == null) {
             return false;

@@ -6,6 +6,6 @@ import io.confluent.kafka.schemaregistry.client.security.basicauth.UrlBasicAuthC
 public class DestUrlBasicAuthCredentialProvider extends UrlBasicAuthCredentialProvider {
     @Override
     public String alias() {
-        return "DEST_URL";
+        return "TARGET_URL";
     }
 }
