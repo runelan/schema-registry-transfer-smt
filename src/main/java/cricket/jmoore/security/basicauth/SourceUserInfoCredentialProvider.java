@@ -3,10 +3,10 @@ package cricket.jmoore.security.basicauth;
 
 import io.confluent.kafka.schemaregistry.client.security.basicauth.UserInfoCredentialProvider;
 
-public class DestUserInfoCredentialProvider extends UserInfoCredentialProvider
+public class SourceUserInfoCredentialProvider extends UserInfoCredentialProvider
 {
     @Override
     public String alias() {
-        return "TARGET_USER_INFO";
+        return "SOURCE_USER_INFO";
     }
 }
