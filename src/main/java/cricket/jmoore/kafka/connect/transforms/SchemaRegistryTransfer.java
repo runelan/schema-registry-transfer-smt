@@ -161,7 +161,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
     public void configure(Map<String, ?> props) {
 
         StringBuilder configInfo = new StringBuilder();
-        configInfo.append("##########\n# Schema Registry Transfer SMT config\n##########\n");
+        configInfo.append("\n##########\n# Schema Registry Transfer SMT config\n##########\n");
         props.forEach((k, v) -> {
             configInfo.append(k).append("=").append(v).append("\n");
         });
@@ -169,34 +169,39 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
 
         log.info(configInfo.toString());
 
-        SimpleConfig config = new SimpleConfig(CONFIG_DEF, props);
+        try {
+            SimpleConfig config = new SimpleConfig(CONFIG_DEF, props);
 
-        final Map<String, String> sourceProps = new HashMap<>();
-        sourceProps.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE,
-            "SOURCE_" + config.getString(ConfigName.SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE));
-        sourceProps.put(SchemaRegistryClientConfig.USER_INFO_CONFIG,
-            config.getPassword(ConfigName.SOURCE_USER_INFO)
-                .value());
+            final Map<String, String> sourceProps = new HashMap<>();
+            sourceProps.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE,
+                    "SOURCE_" + config.getString(ConfigName.SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE));
+            sourceProps.put(SchemaRegistryClientConfig.USER_INFO_CONFIG,
+                    config.getPassword(ConfigName.SOURCE_USER_INFO)
+                            .value());
 
-        final Map<String, String> targetProps = new HashMap<>();
-        targetProps.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE,
-            "TARGET_" + config.getString(ConfigName.TARGET_BASIC_AUTH_CREDENTIALS_SOURCE));
-        targetProps.put(SchemaRegistryClientConfig.USER_INFO_CONFIG,
-            config.getPassword(ConfigName.TARGET_USER_INFO)
-                .value());
+            final Map<String, String> targetProps = new HashMap<>();
+            targetProps.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE,
+                    "TARGET_" + config.getString(ConfigName.TARGET_BASIC_AUTH_CREDENTIALS_SOURCE));
+            targetProps.put(SchemaRegistryClientConfig.USER_INFO_CONFIG,
+                    config.getPassword(ConfigName.TARGET_USER_INFO)
+                            .value());
 
-        Integer schemaCapacity = config.getInt(ConfigName.SCHEMA_CAPACITY);
+            Integer schemaCapacity = config.getInt(ConfigName.SCHEMA_CAPACITY);
 
-        this.schemaCache = new SynchronizedCache<>(new LRUCache<>(schemaCapacity));
-        this.sourceSchemaRegistryClient = new CachedSchemaRegistryClient(config.getString(ConfigName.SOURCE_SCHEMA_REGISTRY_URL), schemaCapacity, sourceProps);
-        this.targetSchemaRegistryClient = new CachedSchemaRegistryClient(config.getString(ConfigName.TARGET_SCHEMA_REGISTRY_URL), schemaCapacity, targetProps);
+            this.schemaCache = new SynchronizedCache<>(new LRUCache<>(schemaCapacity));
+            this.sourceSchemaRegistryClient = new CachedSchemaRegistryClient(config.getString(ConfigName.SOURCE_SCHEMA_REGISTRY_URL), schemaCapacity, sourceProps);
+            this.targetSchemaRegistryClient = new CachedSchemaRegistryClient(config.getString(ConfigName.TARGET_SCHEMA_REGISTRY_URL), schemaCapacity, targetProps);
 
-        this.transferKeys = config.getBoolean(ConfigName.TRANSFER_KEYS);
-        this.includeHeaders = config.getBoolean(ConfigName.INCLUDE_HEADERS);
+            this.transferKeys = config.getBoolean(ConfigName.TRANSFER_KEYS);
+            this.includeHeaders = config.getBoolean(ConfigName.INCLUDE_HEADERS);
 
-        // TODO: Make the Strategy configurable, may be different for source and target
-        // Strategy for the -key and -value subjects
-        this.subjectNameStrategy = new TopicNameStrategy();
+            // TODO: Make the Strategy configurable, may be different for source and target
+            // Strategy for the -key and -value subjects
+            this.subjectNameStrategy = new TopicNameStrategy();
+        } catch (ConfigException e) {
+            log.error("SMT configuration failed: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
