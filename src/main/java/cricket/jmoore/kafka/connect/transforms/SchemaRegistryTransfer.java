@@ -197,7 +197,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
 
         if (transferKeys) {
             if (!(ConnectSchemaUtil.isBytesSchema(keySchema) || key instanceof byte[])) {
-                throw new ConnectException("Transform failed. Record key does not have a byte[] schema");
+                throw new ConnectException("Transform failed, record key does not have a byte[] schema");
             }
             if (key == null) {
                 log.trace("Passing through null record key.");
@@ -208,16 +208,16 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
                 }
                 ByteBuffer b = ByteBuffer.wrap(keyBytes);
                 int id = copySchema(b, topic, true).orElseThrow(()
-                        -> new ConnectException("Transform failed. Unable to update record schema ID. (isKey=true)"));
+                        -> new ConnectException("Transform failed, unable to update record schema ID (isKey=true)"));
                 b.putInt(1, id);
                 updatedKey = b.array();
             }
         } else {
-            log.trace("Skipping record key translation. {} has been set to false. Keys will be passed as-is.", ConfigName.TRANSFER_KEYS);
+            log.trace("Skipping record key translation, {} has been set to false: keys will be passed as-is", ConfigName.TRANSFER_KEYS);
         }
 
         if (!(ConnectSchemaUtil.isBytesSchema(valueSchema) || value instanceof byte[])) {
-            throw new ConnectException("Transform failed. Record value does not have a byte[] schema.");
+            throw new ConnectException("Transform failed, record value does not have a byte[] schema");
         }
         if (value == null) {
             log.trace("Passing through null record value");
@@ -228,7 +228,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
             }
             ByteBuffer b = ByteBuffer.wrap(valueBytes);
             int id = copySchema(b, topic, false).orElseThrow(()
-                    -> new ConnectException("Transform failed. Unable to update record schema ID. (isKey=false)"));
+                    -> new ConnectException("Transform failed, unable to update record schema ID (isKey=false)"));
             b.putInt(1, id);
             updatedValue = b.array();
         }
@@ -254,7 +254,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
                 ParsedSchema fetchedSchema = sourceSchemaRegistryClient.getSchemaById(sourceSchemaId);
                 schemaAndTargetId.setSchema((org.apache.avro.Schema) fetchedSchema.rawSchema());
             } catch (IOException | RestClientException e) {
-                log.error("Unable to fetch source schema for ID {}", sourceSchemaId, e);
+                log.error("Unable to fetch source schema for ID {}: {}", sourceSchemaId, e.getMessage());
                 throw new ConnectException(e);
             }
 
@@ -265,11 +265,11 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
                 schemaAndTargetId.setId(schemaId);
                 schemaCache.put(sourceSchemaId, schemaAndTargetId);
             } catch (IOException | RestClientException e) {
-                log.error("Unable to register source schema ID {} to target registry", sourceSchemaId);
+                log.error("Unable to register source schema ID {} to target registry: {}", sourceSchemaId, e.getMessage());
                 return Optional.empty();
             }
         } else {
-            log.debug("Schema id {} has been seen before. Using cached mapping.", schemaAndTargetId);
+            log.debug("Schema id {} has been seen before, using cached mapping", schemaAndTargetId);
         }
 
         return Optional.ofNullable(schemaAndTargetId.getId());
