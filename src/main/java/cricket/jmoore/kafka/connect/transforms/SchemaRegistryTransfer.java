@@ -161,7 +161,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
     public void configure(Map<String, ?> props) {
 
         StringBuilder configInfo = new StringBuilder();
-        configInfo.append("\n###################################n# Schema Registry Transfer SMT config\n###################################n");
+        configInfo.append("\n###################################\n# Schema Registry Transfer SMT config\n###################################\n");
         props.forEach((k, v) -> {
             configInfo.append(k).append("=").append(v).append("\n");
         });
