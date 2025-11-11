@@ -277,7 +277,12 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
 
     @Override
     public void close() {
-        this.sourceSchemaRegistryClient = null;
-        this.targetSchemaRegistryClient = null;
+        try {
+            this.sourceSchemaRegistryClient.close();
+            this.targetSchemaRegistryClient.close();
+        } catch (IOException e) {
+            log.error("Error occurred while terminating registry client: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }
