@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
@@ -13,6 +14,7 @@ import org.apache.kafka.common.cache.Cache;
 import org.apache.kafka.common.cache.LRUCache;
 import org.apache.kafka.common.cache.SynchronizedCache;
 import org.apache.kafka.common.config.ConfigDef;
+import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.connect.connector.ConnectRecord;
 import org.apache.kafka.connect.data.Schema;
@@ -36,7 +38,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
     private static final Logger log = LoggerFactory.getLogger(SchemaRegistryTransfer.class);
 
     private static final byte MAGIC_BYTE = (byte) 0x0;
-    // wire-format is magic byte + an integer, then data
+    // Wire-format is magic byte + an integer, then data
     private static final short WIRE_FORMAT_PREFIX_LENGTH = 1 + (Integer.SIZE / Byte.SIZE);
 
     public static final ConfigDef CONFIG_DEF;
@@ -67,8 +69,16 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
     private SubjectNameStrategy subjectNameStrategy;
     private boolean transferKeys, includeHeaders;
 
-    // caches from the source registry to the destination registry
+    // Caches from the source registry to the destination registry
     private Cache<Integer, SchemaAndId> schemaCache;
+
+    // Regex explanation
+    // `^https?:\\/\\/`: `http://` or `https://`
+    // `(?:[A-Za-z0-9._%+-]+(?::[^@]*)?@)?`: optional username and optional `:password`, ending with `@`
+    // `[A-Za-z0-9.-]+`: host or domain
+    // `(?::\\d+)?`: optional port
+    // `(?:\\/[^\\s]*)?`: optional path segment
+    private static final Pattern URL_PATTERN = Pattern.compile("^https?:\\/\\/(?:[A-Za-z0-9._%+-]+(?::[^@]*)?@)?[A-Za-z0-9.-]+(?::\\d+)?(?:\\/[^\\s]*)?$");
 
     public SchemaRegistryTransfer() {}
 
@@ -78,14 +88,22 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
                         ConfigName.SOURCE_SCHEMA_REGISTRY_URL,
                         ConfigDef.Type.STRING,
                         ConfigDef.NO_DEFAULT_VALUE,
-                        new ConfigDef.NonEmptyString(),
+                        (name, value) -> {
+                            if(value != null && !URL_PATTERN.matcher((String) value).matches()) {
+                              throw new ConfigException(name, value);
+                            }
+                        },
                         ConfigDef.Importance.HIGH,
                         SOURCE_SCHEMA_REGISTRY_CONFIG_DOC)
                 .define(
                         ConfigName.TARGET_SCHEMA_REGISTRY_URL,
                         ConfigDef.Type.STRING,
                         ConfigDef.NO_DEFAULT_VALUE,
-                        new ConfigDef.NonEmptyString(),
+                        (name, value) -> {
+                            if(value != null && !URL_PATTERN.matcher((String) value).matches()) {
+                                throw new ConfigException(name, value);
+                            }
+                        },
                         ConfigDef.Importance.HIGH,
                         TARGET_SCHEMA_REGISTRY_CONFIG_DOC)
                 .define(
