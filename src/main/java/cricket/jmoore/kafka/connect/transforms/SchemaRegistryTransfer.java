@@ -4,7 +4,6 @@ package cricket.jmoore.kafka.connect.transforms;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -19,7 +18,6 @@ import org.apache.kafka.connect.connector.ConnectRecord;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.transforms.Transformation;
-import org.apache.kafka.connect.transforms.util.NonEmptyListValidator;
 import org.apache.kafka.connect.transforms.util.SimpleConfig;
 
 import org.slf4j.Logger;
@@ -45,12 +43,12 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
     public static final String SCHEMA_CAPACITY_CONFIG_DOC = "The maximum amount of schemas to be stored for each Schema Registry client.";
     public static final Integer SCHEMA_CAPACITY_CONFIG_DEFAULT = 100;
 
-    public static final String SRC_PREAMBLE = "For source consumer's schema registry, ";
-    public static final String SRC_SCHEMA_REGISTRY_CONFIG_DOC = "A list of addresses for the Schema Registry to copy from. The consumer's Schema Registry.";
-    public static final String SRC_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DOC = SRC_PREAMBLE + KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE_DOC;
-    public static final String SRC_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DEFAULT = KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE_DEFAULT;
-    public static final String SRC_USER_INFO_CONFIG_DOC = SRC_PREAMBLE + KafkaAvroSerializerConfig.SCHEMA_REGISTRY_USER_INFO_DOC;
-    public static final String SRC_USER_INFO_CONFIG_DEFAULT = KafkaAvroSerializerConfig.SCHEMA_REGISTRY_USER_INFO_DEFAULT;
+    public static final String SOURCE_PREAMBLE = "For source consumer's schema registry, ";
+    public static final String SOURCE_SCHEMA_REGISTRY_CONFIG_DOC = "A list of addresses for the Schema Registry to copy from. The consumer's Schema Registry.";
+    public static final String SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DOC = SOURCE_PREAMBLE + KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE_DOC;
+    public static final String SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DEFAULT = KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE_DEFAULT;
+    public static final String SOURCE_USER_INFO_CONFIG_DOC = SOURCE_PREAMBLE + KafkaAvroSerializerConfig.SCHEMA_REGISTRY_USER_INFO_DOC;
+    public static final String SOURCE_USER_INFO_CONFIG_DEFAULT = KafkaAvroSerializerConfig.SCHEMA_REGISTRY_USER_INFO_DEFAULT;
 
     public static final String TARGET_PREAMBLE = "For target producer's schema registry, ";
     public static final String TARGET_SCHEMA_REGISTRY_CONFIG_DOC = "A list of addresses for the Schema Registry to copy to. The producer's Schema Registry.";
@@ -76,15 +74,62 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
 
     static {
         CONFIG_DEF = (new ConfigDef())
-                .define(ConfigName.SRC_SCHEMA_REGISTRY_URL, ConfigDef.Type.LIST, ConfigDef.NO_DEFAULT_VALUE, new NonEmptyListValidator(), ConfigDef.Importance.HIGH, SRC_SCHEMA_REGISTRY_CONFIG_DOC)
-                .define(ConfigName.TARGET_SCHEMA_REGISTRY_URL, ConfigDef.Type.LIST, ConfigDef.NO_DEFAULT_VALUE, new NonEmptyListValidator(), ConfigDef.Importance.HIGH, TARGET_SCHEMA_REGISTRY_CONFIG_DOC)
-                .define(ConfigName.SRC_BASIC_AUTH_CREDENTIALS_SOURCE, ConfigDef.Type.STRING, SRC_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DEFAULT, ConfigDef.Importance.MEDIUM, SRC_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DOC)
-                .define(ConfigName.SRC_USER_INFO, ConfigDef.Type.PASSWORD, SRC_USER_INFO_CONFIG_DEFAULT, ConfigDef.Importance.MEDIUM, SRC_USER_INFO_CONFIG_DOC)
-                .define(ConfigName.TARGET_BASIC_AUTH_CREDENTIALS_SOURCE, ConfigDef.Type.STRING, TARGET_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DEFAULT, ConfigDef.Importance.MEDIUM, TARGET_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DOC)
-                .define(ConfigName.TARGET_USER_INFO, ConfigDef.Type.PASSWORD, TARGET_USER_INFO_CONFIG_DEFAULT, ConfigDef.Importance.MEDIUM, TARGET_USER_INFO_CONFIG_DOC)
-                .define(ConfigName.SCHEMA_CAPACITY, ConfigDef.Type.INT, SCHEMA_CAPACITY_CONFIG_DEFAULT, ConfigDef.Importance.LOW, SCHEMA_CAPACITY_CONFIG_DOC)
-                .define(ConfigName.TRANSFER_KEYS, ConfigDef.Type.BOOLEAN, TRANSFER_KEYS_CONFIG_DEFAULT, ConfigDef.Importance.MEDIUM, TRANSFER_KEYS_CONFIG_DOC)
-                .define(ConfigName.INCLUDE_HEADERS, ConfigDef.Type.BOOLEAN, INCLUDE_HEADERS_CONFIG_DEFAULT, ConfigDef.Importance.MEDIUM, INCLUDE_HEADERS_CONFIG_DOC)
+                .define(
+                        ConfigName.SOURCE_SCHEMA_REGISTRY_URL,
+                        ConfigDef.Type.STRING,
+                        ConfigDef.NO_DEFAULT_VALUE,
+                        new ConfigDef.NonEmptyString(),
+                        ConfigDef.Importance.HIGH,
+                        SOURCE_SCHEMA_REGISTRY_CONFIG_DOC)
+                .define(
+                        ConfigName.TARGET_SCHEMA_REGISTRY_URL,
+                        ConfigDef.Type.STRING,
+                        ConfigDef.NO_DEFAULT_VALUE,
+                        new ConfigDef.NonEmptyString(),
+                        ConfigDef.Importance.HIGH,
+                        TARGET_SCHEMA_REGISTRY_CONFIG_DOC)
+                .define(
+                        ConfigName.SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE,
+                        ConfigDef.Type.STRING,
+                        SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DEFAULT,
+                        ConfigDef.Importance.MEDIUM,
+                        SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DOC)
+                .define(
+                        ConfigName.SOURCE_USER_INFO,
+                        ConfigDef.Type.PASSWORD,
+                        SOURCE_USER_INFO_CONFIG_DEFAULT,
+                        ConfigDef.Importance.MEDIUM,
+                        SOURCE_USER_INFO_CONFIG_DOC)
+                .define(
+                        ConfigName.TARGET_BASIC_AUTH_CREDENTIALS_SOURCE,
+                        ConfigDef.Type.STRING,
+                        TARGET_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DEFAULT,
+                        ConfigDef.Importance.MEDIUM,
+                        TARGET_BASIC_AUTH_CREDENTIALS_SOURCE_CONFIG_DOC)
+                .define(
+                        ConfigName.TARGET_USER_INFO,
+                        ConfigDef.Type.PASSWORD,
+                        TARGET_USER_INFO_CONFIG_DEFAULT,
+                        ConfigDef.Importance.MEDIUM,
+                        TARGET_USER_INFO_CONFIG_DOC)
+                .define(
+                        ConfigName.SCHEMA_CAPACITY,
+                        ConfigDef.Type.INT,
+                        SCHEMA_CAPACITY_CONFIG_DEFAULT,
+                        ConfigDef.Importance.LOW,
+                        SCHEMA_CAPACITY_CONFIG_DOC)
+                .define(
+                        ConfigName.TRANSFER_KEYS,
+                        ConfigDef.Type.BOOLEAN,
+                        TRANSFER_KEYS_CONFIG_DEFAULT,
+                        ConfigDef.Importance.MEDIUM,
+                        TRANSFER_KEYS_CONFIG_DOC)
+                .define(
+                        ConfigName.INCLUDE_HEADERS,
+                        ConfigDef.Type.BOOLEAN,
+                        INCLUDE_HEADERS_CONFIG_DEFAULT,
+                        ConfigDef.Importance.MEDIUM,
+                        INCLUDE_HEADERS_CONFIG_DOC)
         ;
         // TODO: Other properties might be useful, e.g. the Subject Naming Strategies
     }
@@ -96,17 +141,25 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
 
     @Override
     public void configure(Map<String, ?> props) {
+
+        StringBuilder configInfo = new StringBuilder();
+        configInfo.append("##########\n# Schema Registry Transfer SMT config\n##########\n");
+        props.forEach((k, v) -> {
+            configInfo.append(k).append("=").append(v).append("\n");
+        });
+        configInfo.append("\n\n");
+
+        log.info(configInfo.toString());
+
         SimpleConfig config = new SimpleConfig(CONFIG_DEF, props);
 
-        List<String> sourceUrls = config.getList(ConfigName.SRC_SCHEMA_REGISTRY_URL);
         final Map<String, String> sourceProps = new HashMap<>();
         sourceProps.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE,
-            "SRC_" + config.getString(ConfigName.SRC_BASIC_AUTH_CREDENTIALS_SOURCE));
+            "SOURCE_" + config.getString(ConfigName.SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE));
         sourceProps.put(SchemaRegistryClientConfig.USER_INFO_CONFIG,
-            config.getPassword(ConfigName.SRC_USER_INFO)
+            config.getPassword(ConfigName.SOURCE_USER_INFO)
                 .value());
 
-        List<String> targetUrls = config.getList(ConfigName.TARGET_SCHEMA_REGISTRY_URL);
         final Map<String, String> targetProps = new HashMap<>();
         targetProps.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE,
             "TARGET_" + config.getString(ConfigName.TARGET_BASIC_AUTH_CREDENTIALS_SOURCE));
@@ -117,8 +170,8 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
         Integer schemaCapacity = config.getInt(ConfigName.SCHEMA_CAPACITY);
 
         this.schemaCache = new SynchronizedCache<>(new LRUCache<>(schemaCapacity));
-        this.sourceSchemaRegistryClient = new CachedSchemaRegistryClient(sourceUrls, schemaCapacity, sourceProps);
-        this.targetSchemaRegistryClient = new CachedSchemaRegistryClient(targetUrls, schemaCapacity, targetProps);
+        this.sourceSchemaRegistryClient = new CachedSchemaRegistryClient(config.getString(ConfigName.SOURCE_SCHEMA_REGISTRY_URL), schemaCapacity, sourceProps);
+        this.targetSchemaRegistryClient = new CachedSchemaRegistryClient(config.getString(ConfigName.TARGET_SCHEMA_REGISTRY_URL), schemaCapacity, targetProps);
 
         this.transferKeys = config.getBoolean(ConfigName.TRANSFER_KEYS);
         this.includeHeaders = config.getBoolean(ConfigName.INCLUDE_HEADERS);
@@ -144,7 +197,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
 
         if (transferKeys) {
             if (!(ConnectSchemaUtil.isBytesSchema(keySchema) || key instanceof byte[])) {
-                throw new ConnectException("Transform failed. Record key does not have a byte[] schema");
+                throw new ConnectException("Transform failed, record key does not have a byte[] schema");
             }
             if (key == null) {
                 log.trace("Passing through null record key.");
@@ -155,16 +208,16 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
                 }
                 ByteBuffer b = ByteBuffer.wrap(keyBytes);
                 int id = copySchema(b, topic, true).orElseThrow(()
-                        -> new ConnectException("Transform failed. Unable to update record schema ID. (isKey=true)"));
+                        -> new ConnectException("Transform failed, unable to update record schema ID (isKey=true)"));
                 b.putInt(1, id);
                 updatedKey = b.array();
             }
         } else {
-            log.trace("Skipping record key translation. {} has been set to false. Keys will be passed as-is.", ConfigName.TRANSFER_KEYS);
+            log.trace("Skipping record key translation, {} has been set to false: keys will be passed as-is", ConfigName.TRANSFER_KEYS);
         }
 
         if (!(ConnectSchemaUtil.isBytesSchema(valueSchema) || value instanceof byte[])) {
-            throw new ConnectException("Transform failed. Record value does not have a byte[] schema.");
+            throw new ConnectException("Transform failed, record value does not have a byte[] schema");
         }
         if (value == null) {
             log.trace("Passing through null record value");
@@ -175,7 +228,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
             }
             ByteBuffer b = ByteBuffer.wrap(valueBytes);
             int id = copySchema(b, topic, false).orElseThrow(()
-                    -> new ConnectException("Transform failed. Unable to update record schema ID. (isKey=false)"));
+                    -> new ConnectException("Transform failed, unable to update record schema ID (isKey=false)"));
             b.putInt(1, id);
             updatedValue = b.array();
         }
@@ -201,7 +254,7 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
                 ParsedSchema fetchedSchema = sourceSchemaRegistryClient.getSchemaById(sourceSchemaId);
                 schemaAndTargetId.setSchema((org.apache.avro.Schema) fetchedSchema.rawSchema());
             } catch (IOException | RestClientException e) {
-                log.error("Unable to fetch source schema for ID {}", sourceSchemaId, e);
+                log.error("Unable to fetch source schema for ID {}: {}", sourceSchemaId, e.getMessage());
                 throw new ConnectException(e);
             }
 
@@ -212,11 +265,11 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
                 schemaAndTargetId.setId(schemaId);
                 schemaCache.put(sourceSchemaId, schemaAndTargetId);
             } catch (IOException | RestClientException e) {
-                log.error("Unable to register source schema ID {} to target registry", sourceSchemaId);
+                log.error("Unable to register source schema ID {} to target registry: {}", sourceSchemaId, e.getMessage());
                 return Optional.empty();
             }
         } else {
-            log.debug("Schema id {} has been seen before. Using cached mapping.", schemaAndTargetId);
+            log.debug("Schema id {} has been seen before, using cached mapping", schemaAndTargetId);
         }
 
         return Optional.ofNullable(schemaAndTargetId.getId());
@@ -224,7 +277,12 @@ public class SchemaRegistryTransfer<R extends ConnectRecord<R>> implements Trans
 
     @Override
     public void close() {
-        this.sourceSchemaRegistryClient = null;
-        this.targetSchemaRegistryClient = null;
+        try {
+            this.sourceSchemaRegistryClient.close();
+            this.targetSchemaRegistryClient.close();
+        } catch (IOException e) {
+            log.error("Error occurred while terminating registry client: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }

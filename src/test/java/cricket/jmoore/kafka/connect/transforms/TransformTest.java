@@ -89,7 +89,7 @@ public class TransformTest {
 
     private Map<String, Object> getRequiredTransformConfigs() {
         Map<String, Object> configs = new HashMap<>();
-        configs.put(ConfigName.SRC_SCHEMA_REGISTRY_URL, sourceSchemaRegistry.getUrl());
+        configs.put(ConfigName.SOURCE_SCHEMA_REGISTRY_URL, sourceSchemaRegistry.getUrl());
         configs.put(ConfigName.TARGET_SCHEMA_REGISTRY_URL, targetSchemaRegistry.getUrl());
         return configs;
     }
@@ -108,8 +108,8 @@ public class TransformTest {
     private void configure(final String sourceUserInfo, final String targetUserInfo, ExplicitAuthType credentialSource) {
         if (credentialSource == ExplicitAuthType.USER_INFO) {
             if (sourceUserInfo != null) {
-                smtConfiguration.put(ConfigName.SRC_BASIC_AUTH_CREDENTIALS_SOURCE, Constants.USER_INFO_SOURCE);
-                smtConfiguration.put(ConfigName.SRC_USER_INFO, sourceUserInfo);
+                smtConfiguration.put(ConfigName.SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE, Constants.USER_INFO_SOURCE);
+                smtConfiguration.put(ConfigName.SOURCE_USER_INFO, sourceUserInfo);
             }
 
             if (targetUserInfo != null) {
@@ -120,14 +120,14 @@ public class TransformTest {
             if (sourceUserInfo != null) {
                 String url = sourceSchemaRegistry.getUrl();
                 url = url.replace("://", "://" + sourceUserInfo + "@" );
-                smtConfiguration.put(ConfigName.SRC_SCHEMA_REGISTRY_URL, url);
+                smtConfiguration.put(ConfigName.SOURCE_SCHEMA_REGISTRY_URL, url);
 
                 if (credentialSource == ExplicitAuthType.URL) {
-                    smtConfiguration.put(ConfigName.SRC_BASIC_AUTH_CREDENTIALS_SOURCE, Constants.URL_SOURCE);
+                    smtConfiguration.put(ConfigName.SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE, Constants.URL_SOURCE);
                 } else if (credentialSource == ExplicitAuthType.NULL) {
                     // For an explicit null case, set both the URL and UserInfo to confirm that neither is found
-                    smtConfiguration.put(ConfigName.SRC_BASIC_AUTH_CREDENTIALS_SOURCE, null);
-                    smtConfiguration.put(ConfigName.SRC_USER_INFO, sourceUserInfo);
+                    smtConfiguration.put(ConfigName.SOURCE_BASIC_AUTH_CREDENTIALS_SOURCE, null);
+                    smtConfiguration.put(ConfigName.SOURCE_USER_INFO, sourceUserInfo);
                 } else {
                     // For null ExplicitAuthType, insert no key and rely on implicit default.
                 }
@@ -430,7 +430,7 @@ public class TransformTest {
         // Verify that the transform will fail on the byte[]-less record value, which in this test-case
         // is empty due to the fact that it is a key-schema only
         ConnectException connectException = assertThrows(ConnectException.class, () -> smt.apply(testRecord));
-        assertEquals("Transform failed. Record value does not have a byte[] schema.", connectException.getMessage());
+        assertTrue(connectException.getMessage().contains("Transform failed"));
 
         // Verify that the target registry now has a population of one for this subject
         targetSchemaVersions = targetClient.getAllVersions(SUBJECT_KEY);

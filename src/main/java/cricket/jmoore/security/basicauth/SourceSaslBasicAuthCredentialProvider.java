@@ -3,9 +3,9 @@ package cricket.jmoore.security.basicauth;
 
 import io.confluent.kafka.schemaregistry.client.security.basicauth.SaslBasicAuthCredentialProvider;
 
-public class DestSaslBasicAuthCredentialProvider extends SaslBasicAuthCredentialProvider {
+public class SourceSaslBasicAuthCredentialProvider extends SaslBasicAuthCredentialProvider {
     @Override
     public String alias() {
-        return "TARGET_SASL_INHERIT";
+        return "SOURCE_SASL_INHERIT";
     }
 }
