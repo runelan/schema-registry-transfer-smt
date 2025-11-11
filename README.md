@@ -1,4 +1,4 @@
-# Schema Registry Transfer SMT
+# Statnett's fork of Schema Registry Transfer SMT
 
 A [Kafka Connect Single Message Transformation (SMT)][smt] that reads the serialized [wire format header][wire-format]
 of Confluent's `KafkaAvroSerializer`, performs a lookup against a source [Confluent Schema Registry][schema-registry]
