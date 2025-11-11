@@ -7,6 +7,6 @@ public class SrcUserInfoCredentialProvider extends UserInfoCredentialProvider
 {
     @Override
     public String alias() {
-        return "SRC_USER_INFO";
+        return "SOURCE_USER_INFO";
     }
 }

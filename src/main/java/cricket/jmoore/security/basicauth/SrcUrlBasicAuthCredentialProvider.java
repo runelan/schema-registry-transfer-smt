@@ -6,6 +6,6 @@ import io.confluent.kafka.schemaregistry.client.security.basicauth.UrlBasicAuthC
 public class SrcUrlBasicAuthCredentialProvider extends UrlBasicAuthCredentialProvider {
     @Override
     public String alias() {
-        return "SRC_URL";
+        return "SOURCE_URL";
     }
 }

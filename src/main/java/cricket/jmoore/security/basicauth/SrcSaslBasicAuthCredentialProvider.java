@@ -6,6 +6,6 @@ import io.confluent.kafka.schemaregistry.client.security.basicauth.SaslBasicAuth
 public class SrcSaslBasicAuthCredentialProvider extends SaslBasicAuthCredentialProvider {
     @Override
     public String alias() {
-        return "SRC_SASL_INHERIT";
+        return "SOURCE_SASL_INHERIT";
     }
 }
